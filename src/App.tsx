@@ -1,9 +1,11 @@
-const App = () => {
+import Survey from "./features/Survey/Survey";
 
+const app = () => {
   return (
     <>
+      <Survey />
     </>
   );
 };
 
-export default App;
+export default app;
