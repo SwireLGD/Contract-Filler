@@ -1,5 +1,4 @@
-import Contract from "./features/Contract/Contract";
-
+import Contract from './features/Contract/Contract';
 
 const app = () => {
   return (
