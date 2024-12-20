@@ -1,11 +1,19 @@
 import React, { useRef } from 'react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import { Button } from '@mui/material';
+import Cookies from 'js-cookie';
 
 const Contract: React.FC = () => {
   const pageRefs = useRef<HTMLDivElement[]>([]);
 
+  const surveyData = Cookies.get('surveyData');
+
+  const parsedSurveyData = surveyData ? JSON.parse(surveyData) : {};
+
+  const { surname, name, patronymic, email, bic, bankName, bankAccount } = parsedSurveyData;
   const downloadPdf = async () => {
+
     const pdf = new jsPDF('p', 'mm', 'a4');
 
     for (let i = 0; i < pageRefs.current.length; i++) {
@@ -47,10 +55,10 @@ const Contract: React.FC = () => {
 
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <p>г. Бишкек</p>
-          <p>«___» ___________ 2023 г.</p>
+          <p>{new Date().toLocaleDateString('ru-RU')} г.</p>
         </div>
         <p>
-          <strong>Индивидуальный предприниматель</strong> ____________________________, именуемая в
+          <strong>Индивидуальный предприниматель</strong> {surname} {name} {patronymic ? patronymic : ''}, именуемая в
           дальнейшем: <strong>"Поставщик"</strong>, действующая на основании добровольного
           патента/свидетельства, с одной стороны, и Общество с ограниченной ответственностью
           «Кыргызмобайлкомпани» именуемое в дальнейшем{' '}
@@ -178,8 +186,8 @@ const Contract: React.FC = () => {
         </p>
         <p style={{ margin: '5px 0' }}>
           3.1.1.1.&emsp;Принимать денежные средства, вносимые плательщиками в пользу Поставщика и
-          зачислять их на расчетный счет Поставщика № _______________, БИК __________ в Банке
-          ___________ еженедельно каждый вторник при достижении суммы 2000 (две тысячи) сомов и
+          зачислять их на расчетный счет Поставщика № {bankAccount}, БИК {bic} в Банке
+          {bankName} еженедельно каждый вторник при достижении суммы 2000 (две тысячи) сомов и
           более. В случае если этот день выпадает на выходной или праздничный нерабочий день
           (согласно законодательству Кыргызской Республики), оплата производится в день, следующий
           за выходным или праздничным нерабочим днем недели или месяца. При этом, обязательства
@@ -191,7 +199,7 @@ const Contract: React.FC = () => {
           3.1.1.2.&ensp;Производить ежемесячно сверку с бухгалтерией Поставщика не позднее 08 числа
           каждого месяца, следующего за отчетным, по перечислению принимаемых от плательщиков в
           пользу Поставщика денежных средств, о чем составляется Акт сверки. Направлять Поставщику
-          Акт сверки расчетов на электронную почту _________________, согласно контактной
+          Акт сверки расчетов на электронную почту {email ? email : '-'}, согласно контактной
           информации/, указанной в Приложении №2 Договора.
         </p>
         <p style={{ margin: '5px 0' }}>
@@ -853,7 +861,9 @@ const Contract: React.FC = () => {
 
 
 
-      <button onClick={downloadPdf}>Скачать PDF</button>
+      <Button variant='contained' size='large' onClick={downloadPdf}>
+        Сохранить PDF
+      </Button>
     </div>
   );
 };

@@ -11,9 +11,39 @@ import {
   Select,
   Button,
 } from '@mui/material';
+import { useState } from 'react';
+import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
 
-const ContractForm = () => {
+const Survey = () => {
+  const [surveyData, setSurveyData] = useState({
+    surname: '',
+    name: '',
+    patronymic: '',
+    email: '',
+    bankName: '',
+    bic: '',
+    bankAccount: '',
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setSurveyData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const navigate = useNavigate();
+
+  const handleSave = () => {
+    Cookies.set('surveyData', JSON.stringify(surveyData));
+    navigate('/contract');
+  };
+
   return (
+    <>
+    <form onSubmit={handleSave}>
     <Box sx={{ p: 4 }}>
       <Typography variant='h4' gutterBottom>
         Типовая форма анкеты физического лица
@@ -22,7 +52,7 @@ const ContractForm = () => {
       <Typography variant='h6' gutterBottom>
         Вид анкеты (нужное подчеркнуть)
       </Typography>
-      <FormControl component='fieldset' sx={{ mb: 3 }}>
+      <FormControl  component='fieldset' sx={{ mb: 3 }} >
         {' '}
         <RadioGroup row>
           <FormControlLabel value='primary' control={<Radio />} label='Первичная анкета' />
@@ -34,7 +64,7 @@ const ContractForm = () => {
         1. Идентификационные сведения
       </Typography>
 
-      <FormControl component='fieldset' sx={{ mb: 3 }}>
+      <FormControl  component='fieldset' sx={{ mb: 3 }}>
         <Typography variant='body1' gutterBottom>
           Статус (нужное подчеркнуть)
         </Typography>
@@ -45,17 +75,17 @@ const ContractForm = () => {
       </FormControl>
 
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Фамилия' variant='outlined' />
+        <TextField fullWidth name='surname'  label='Фамилия' variant='outlined' value={surveyData.surname} onChange={handleChange} />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Имя' variant='outlined' />
+        <TextField fullWidth name='name'  label='Имя' variant='outlined' value={surveyData.name} onChange={handleChange} />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Отчество (при наличии)' variant='outlined' />
+        <TextField fullWidth name='patronymic' label='Отчество (при наличии)' variant='outlined' value={surveyData.patronymic} onChange={handleChange} />
       </Box>
 
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Дата рождения' type='date' InputLabelProps={{ shrink: true }} />
+        <TextField fullWidth label='Дата рождения' type='date' InputLabelProps={{ shrink: true }}  />
       </Box>
       <Box sx={{ mb: 3 }}>
         <TextField fullWidth label='Место рождения (при наличии в документе)' variant='outlined' />
@@ -65,7 +95,7 @@ const ContractForm = () => {
       </Box>
 
       <Box sx={{ mb: 3 }}>
-        <FormControl fullWidth>
+        <FormControl fullWidth >
           <InputLabel>Пол</InputLabel>
           <Select>
             <MenuItem value='male'>Мужской</MenuItem>
@@ -75,7 +105,7 @@ const ContractForm = () => {
       </Box>
 
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Гражданство' variant='outlined' />
+        <TextField fullWidth label='Гражданство' variant='outlined'  />
       </Box>
 
       <Box sx={{ mb: 3 }}>
@@ -91,10 +121,10 @@ const ContractForm = () => {
       </Typography>
 
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Наименование документа' variant='outlined' />
+        <TextField fullWidth label='Наименование документа' variant='outlined'  />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Серия и номер документа' variant='outlined' />
+        <TextField fullWidth label='Серия и номер документа' variant='outlined'  />
       </Box>
       <Box sx={{ mb: 3 }}>
         <TextField
@@ -102,6 +132,7 @@ const ContractForm = () => {
           label='Дата выдачи документа'
           type='date'
           InputLabelProps={{ shrink: true }}
+          
         />
       </Box>
       <Box sx={{ mb: 3 }}>
@@ -110,16 +141,17 @@ const ContractForm = () => {
           label='Дата окончания срока действия документа'
           type='date'
           InputLabelProps={{ shrink: true }}
+          
         />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Наименование органа, выдавшего документ' variant='outlined' />
+        <TextField fullWidth label='Наименование органа, выдавшего документ' variant='outlined'  />
       </Box>
       <Box sx={{ mb: 3 }}>
         <TextField fullWidth label='Код подразделения (если имеется)' variant='outlined' />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Персональный идентификационный номер' variant='outlined' />
+        <TextField fullWidth label='Персональный идентификационный номер' variant='outlined'  />
       </Box>
       <Box sx={{ mb: 3 }}>
         <TextField
@@ -145,13 +177,14 @@ const ContractForm = () => {
           fullWidth
           label='Номера телефонов (домашний, рабочий и мобильный)'
           variant='outlined'
+          
         />
       </Box>
       <Box sx={{ mb: 3 }}>
         <TextField fullWidth label='Номер факса (при наличии)' variant='outlined' />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Адрес электронной почты (при наличии)' variant='outlined' />
+        <TextField fullWidth name='email' label='Адрес электронной почты (при наличии)' variant='outlined' value={surveyData.email} onChange={handleChange}/>
       </Box>
 
       <Typography variant='h5' gutterBottom sx={{ mt: 4 }}>
@@ -162,7 +195,7 @@ const ContractForm = () => {
         Реквизиты документа, подтверждающего право иностранного гражданина или лица без гражданства
         на пребывание (проживание) в Кыргызской Республике:
       </Typography>
-      <FormControl component='fieldset' sx={{ mb: 3 }}>
+      <FormControl component='fieldset' sx={{ mb: 3 }} >
         <RadioGroup row>
           <FormControlLabel value='ResidencePermit' control={<Radio />} label='Вид на жительство' />
           <FormControlLabel
@@ -181,6 +214,7 @@ const ContractForm = () => {
           fullWidth
           label='Дата начала срока действия права пребывания (проживания)'
           variant='outlined'
+          
         />
       </Box>
       <Box sx={{ mb: 3 }}>
@@ -188,6 +222,7 @@ const ContractForm = () => {
           fullWidth
           label='Дата окончания срока действия права пребывания (проживания)'
           variant='outlined'
+          
         />
       </Box>
 
@@ -200,12 +235,13 @@ const ContractForm = () => {
           fullWidth
           label='Цель и предполагаемый характер деловых отношений'
           variant='outlined'
+          
         />
       </Box>
       <Typography variant='h6' gutterBottom>
         Является ли лицо публичным должностным лицом (ПДЛ) (нужное подчеркнуть)
       </Typography>
-      <FormControl component='fieldset' sx={{ mb: 3 }}>
+      <FormControl component='fieldset' sx={{ mb: 3 }} >
         <RadioGroup row>
           <FormControlLabel value='Yes' control={<Radio />} label='Да' />
           <FormControlLabel value='No' control={<Radio />} label='Нет' />
@@ -217,7 +253,7 @@ const ContractForm = () => {
         Сведения о наличии у лица бенефициарного владельца (нужное подчеркнуть)
       </Typography>
 
-      <FormControl component='fieldset' sx={{ mb: 3 }}>
+      <FormControl component='fieldset' sx={{ mb: 3 }} >
         <RadioGroup row>
           <FormControlLabel value='Have' control={<Radio />} label='Имеется' />
           <FormControlLabel value='DoNotHave' control={<Radio />} label='Не имеется' />
@@ -229,16 +265,17 @@ const ContractForm = () => {
           fullWidth
           label='Сведения о документах, подтверждающих полномочия по распоряжению денежными средствами или имуществом (согласно карточке образцов подписей)'
           variant='outlined'
+          
         />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Название банка ИП' variant='outlined' />
+        <TextField fullWidth name='bankName' label='Название банка ИП' variant='outlined'  value={surveyData.bankName} onChange={handleChange} />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='БИК' variant='outlined' />
+        <TextField fullWidth name='bic' label='БИК' variant='outlined'  value={surveyData.bic} onChange={handleChange} />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Расчетный счет' variant='outlined' />
+        <TextField fullWidth name='bankAccount' label='Расчетный счет' variant='outlined'  value={surveyData.bankAccount} onChange={handleChange} />
       </Box>
 
       <Typography variant='h5' gutterBottom sx={{ mt: 4 }}>
@@ -255,22 +292,23 @@ const ContractForm = () => {
           label='Дата регистрации'
           type='date'
           InputLabelProps={{ shrink: true }}
+          
         />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Государственный регистрационный номер' variant='outlined' />
+        <TextField fullWidth label='Государственный регистрационный номер' variant='outlined'  />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Наименование регистрирующего органа' variant='outlined' />
+        <TextField fullWidth label='Наименование регистрирующего органа' variant='outlined'  />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Место регистрации' variant='outlined' />
+        <TextField fullWidth label='Место регистрации' variant='outlined'  />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Код УГНС' variant='outlined' />
+        <TextField fullWidth label='Код УГНС' variant='outlined'  />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='ОКПО' variant='outlined' />
+        <TextField fullWidth label='ОКПО' variant='outlined'  />
       </Box>
 
       <Typography variant='h6' gutterBottom sx={{ mt: 4 }}>
@@ -278,10 +316,10 @@ const ContractForm = () => {
       </Typography>
 
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Вид патента или лицензии' variant='outlined' />
+        <TextField fullWidth label='Вид патента или лицензии' variant='outlined'  />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Номер патента или лицензии' variant='outlined' />
+        <TextField fullWidth label='Номер патента или лицензии' variant='outlined'  />
       </Box>
       <Box sx={{ mb: 3 }}>
         <TextField
@@ -289,13 +327,14 @@ const ContractForm = () => {
           label='Дата выдачи патента или лицензии'
           type='date'
           InputLabelProps={{ shrink: true }}
+          
         />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Кем выдан патент или лицензия' variant='outlined' />
+        <TextField fullWidth label='Кем выдан патент или лицензия' variant='outlined'  />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Срок действия патента или лицензии' variant='outlined' />
+        <TextField fullWidth label='Срок действия патента или лицензии' variant='outlined'  />
       </Box>
       <Box sx={{ mb: 3 }}>
         <TextField
@@ -305,10 +344,10 @@ const ContractForm = () => {
         />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='Код УГНС' variant='outlined' />
+        <TextField fullWidth label='Код УГНС' variant='outlined'  />
       </Box>
       <Box sx={{ mb: 3 }}>
-        <TextField fullWidth label='ОКПО' variant='outlined' />
+        <TextField fullWidth label='ОКПО' variant='outlined'  />
       </Box>
 
       <Typography variant='h5' gutterBottom>
@@ -319,7 +358,7 @@ const ContractForm = () => {
       <Typography variant='h6' gutterBottom>
         Сведения о проведении верификации и о результатах верификации (нужное подчеркнуть)
       </Typography>
-      <FormControl component='fieldset' sx={{ mb: 3 }}>
+      <FormControl component='fieldset' sx={{ mb: 3 }} >
         <RadioGroup row>
           <FormControlLabel value='CarriedOut' control={<Radio />} label='Проведена' />
           <FormControlLabel value='NotCarriedOut' control={<Radio />} label='Не проведена' />
@@ -346,7 +385,7 @@ const ContractForm = () => {
         деятельности, а также за финансирование данной деятельности, и о результатах проверки
         (нужное подчеркнуть)
       </Typography>
-      <FormControl component='fieldset' sx={{ mb: 3 }}>
+      <FormControl component='fieldset' sx={{ mb: 3 }} >
         <RadioGroup row>
           <FormControlLabel
             value='NotInTheList'
@@ -365,7 +404,7 @@ const ContractForm = () => {
       <Typography variant='h6' gutterBottom>
         Степень (уровень) риска (нужное подчеркнуть)
       </Typography>
-      <FormControl component='fieldset' sx={{ mb: 3 }}>
+      <FormControl component='fieldset' sx={{ mb: 3 }} >
         <RadioGroup row>
           <FormControlLabel value='HighRisk' control={<Radio />} label='Высокий риск' />
           <FormControlLabel value='LowRisk' control={<Radio />} label='Низкий риск' />
@@ -376,6 +415,7 @@ const ContractForm = () => {
           fullWidth
           label='Обоснование оценки степени (уровня) риска (по критериям высокого риска)'
           variant='outlined'
+          
         />
       </Box>
       <Box sx={{ mb: 3 }}>
@@ -405,6 +445,7 @@ const ContractForm = () => {
           type='date'
           InputLabelProps={{ shrink: true }}
           sx={{ mb: 1 }}
+          
         />
         <TextField fullWidth label='ФИО:' variant='outlined' />
       </Box>
@@ -418,6 +459,7 @@ const ContractForm = () => {
           type='date'
           InputLabelProps={{ shrink: true }}
           sx={{ mb: 1 }}
+          
         />
         <TextField fullWidth label='ФИО:' variant='outlined' />
       </Box>
@@ -439,11 +481,13 @@ const ContractForm = () => {
         </Typography>
       </Box>
 
-      <Button variant='contained' color='primary' sx={{ mt: 4 }}>
-        Далее
+      <Button type='submit' variant="contained" size="large">
+          Далее
       </Button>
-    </Box>
+      </Box>
+      </form>
+    </>
   );
 };
 
-export default ContractForm;
+export default Survey;
