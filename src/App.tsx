@@ -1,9 +1,10 @@
-import Survey from "./features/Survey/Survey";
+import Contract from "./features/Contract/Contract";
+
 
 const app = () => {
   return (
     <>
-      <Survey />
+      <Contract />
     </>
   );
 };
