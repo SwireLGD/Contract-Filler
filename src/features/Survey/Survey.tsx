@@ -11,11 +11,15 @@ import {
   Select,
   Button,
 } from '@mui/material';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
+import ReCAPTCHA from 'react-google-recaptcha'
+import axiosApi from '../../axiosApi';
+import { returnTranslation } from '../../languages';
 
 const Survey = () => {
+  const recaptcha = useRef<ReCAPTCHA | null>(null);
   const [surveyData, setSurveyData] = useState({
     surname: '',
     name: '',
@@ -25,6 +29,9 @@ const Survey = () => {
     bic: '',
     bankAccount: '',
   });
+  const [language, setLanguage] = useState('ru');
+  const navigate = useNavigate();
+  const translation = returnTranslation('Survey', language);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -34,11 +41,25 @@ const Survey = () => {
     }));
   };
 
-  const navigate = useNavigate();
+  const handleLanguageChange = (newLang: string) => {
+    setLanguage(newLang);
+  };
 
-  const handleSave = () => {
-    Cookies.set('surveyData', JSON.stringify(surveyData));
-    navigate('/contract');
+  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const captchaValue = recaptcha?.current?.getValue();
+    if (!captchaValue) {
+      alert('Пожалуйста выполните каптчу!');
+    } else {
+      const res = await axiosApi.post('/verify', { captchaValue });
+      const data = await res.data;
+      
+      if (data.success) {
+        console.log('captcha completed');
+        Cookies.set('surveyData', JSON.stringify(surveyData));
+        navigate('/contract');
+      }
+    }
   };
 
   return (
@@ -46,31 +67,44 @@ const Survey = () => {
       <form onSubmit={handleSave}>
         <Box sx={{ p: 4 }}>
           <Typography variant='h4' gutterBottom>
-            Типовая форма анкеты физического лица
+            {translation.surveyTitle}
           </Typography>
 
+          <FormControl sx={{ mb: 1 }}>
+            <InputLabel id="language-label">{translation.language}</InputLabel>
+            <Select
+              labelId="language-label"
+              value={language}
+              label={translation.language}
+              onChange={(e) => handleLanguageChange(e.target.value)}
+            >
+              <MenuItem value="ru">Русский</MenuItem>
+              <MenuItem value="kg">Кыргызча</MenuItem>
+            </Select>
+          </FormControl>
+
           <Typography variant='h6' gutterBottom>
-            Вид анкеты (нужное подчеркнуть)
+            {translation.surveyTypes}
           </Typography>
-          <FormControl required component='fieldset' sx={{ mb: 3 }}>
+          <FormControl  component='fieldset' sx={{ mb: 3 }}>
             {' '}
             <RadioGroup row>
-              <FormControlLabel value='primary' control={<Radio />} label='Первичная анкета' />
-              <FormControlLabel value='updated' control={<Radio />} label='Обновленная анкета' />
+              <FormControlLabel value='primary' control={<Radio />} label={translation.initialType} />
+              <FormControlLabel value='updated' control={<Radio />} label={translation.updatedType} />
             </RadioGroup>
           </FormControl>
 
           <Typography variant='h5' gutterBottom>
-            1. Идентификационные сведения
+            {translation.identificationInfo}
           </Typography>
 
-          <FormControl required component='fieldset' sx={{ mb: 3 }}>
+          <FormControl  component='fieldset' sx={{ mb: 3 }}>
             <Typography variant='body1' gutterBottom>
-              Статус (нужное подчеркнуть)
+              {translation.status}
             </Typography>
             <RadioGroup row>
               <FormControlLabel value='resident' control={<Radio />} label='Резидент' />
-              <FormControlLabel value='nonresident' control={<Radio />} label='Нерезидент' />
+              <FormControlLabel value='nonresident' control={<Radio />} label={translation.nonResident} />
             </RadioGroup>
           </FormControl>
 
@@ -78,7 +112,7 @@ const Survey = () => {
             <TextField
               fullWidth
               name='surname'
-              required
+              
               label='Фамилия'
               variant='outlined'
               value={surveyData.surname}
@@ -89,7 +123,7 @@ const Survey = () => {
             <TextField
               fullWidth
               name='name'
-              required
+              
               label='Имя'
               variant='outlined'
               value={surveyData.name}
@@ -113,7 +147,7 @@ const Survey = () => {
               label='Дата рождения'
               type='date'
               InputLabelProps={{ shrink: true }}
-              required
+              
             />
           </Box>
           <Box sx={{ mb: 3 }}>
@@ -132,7 +166,7 @@ const Survey = () => {
           </Box>
 
           <Box sx={{ mb: 3 }}>
-            <FormControl fullWidth required>
+            <FormControl fullWidth >
               <InputLabel>Пол</InputLabel>
               <Select>
                 <MenuItem value='male'>Мужской</MenuItem>
@@ -142,7 +176,7 @@ const Survey = () => {
           </Box>
 
           <Box sx={{ mb: 3 }}>
-            <TextField fullWidth label='Гражданство' variant='outlined' required />
+            <TextField fullWidth label='Гражданство' variant='outlined'  />
           </Box>
 
           <Box sx={{ mb: 3 }}>
@@ -158,10 +192,10 @@ const Survey = () => {
           </Typography>
 
           <Box sx={{ mb: 3 }}>
-            <TextField fullWidth label='Наименование документа' variant='outlined' required />
+            <TextField fullWidth label='Наименование документа' variant='outlined'  />
           </Box>
           <Box sx={{ mb: 3 }}>
-            <TextField fullWidth label='Серия и номер документа' variant='outlined' required />
+            <TextField fullWidth label='Серия и номер документа' variant='outlined'  />
           </Box>
           <Box sx={{ mb: 3 }}>
             <TextField
@@ -169,7 +203,7 @@ const Survey = () => {
               label='Дата выдачи документа'
               type='date'
               InputLabelProps={{ shrink: true }}
-              required
+              
             />
           </Box>
           <Box sx={{ mb: 3 }}>
@@ -178,7 +212,7 @@ const Survey = () => {
               label='Дата окончания срока действия документа'
               type='date'
               InputLabelProps={{ shrink: true }}
-              required
+              
             />
           </Box>
           <Box sx={{ mb: 3 }}>
@@ -186,7 +220,7 @@ const Survey = () => {
               fullWidth
               label='Наименование органа, выдавшего документ'
               variant='outlined'
-              required
+              
             />
           </Box>
           <Box sx={{ mb: 3 }}>
@@ -197,7 +231,7 @@ const Survey = () => {
               fullWidth
               label='Персональный идентификационный номер'
               variant='outlined'
-              required
+              
             />
           </Box>
           <Box sx={{ mb: 3 }}>
@@ -224,7 +258,7 @@ const Survey = () => {
               fullWidth
               label='Номера телефонов (домашний, рабочий и мобильный)'
               variant='outlined'
-              required
+              
             />
           </Box>
           <Box sx={{ mb: 3 }}>
@@ -249,7 +283,7 @@ const Survey = () => {
             Реквизиты документа, подтверждающего право иностранного гражданина или лица без
             гражданства на пребывание (проживание) в Кыргызской Республике:
           </Typography>
-          <FormControl component='fieldset' sx={{ mb: 3 }} required>
+          <FormControl component='fieldset' sx={{ mb: 3 }} >
             <RadioGroup row>
               <FormControlLabel
                 value='ResidencePermit'
@@ -276,7 +310,7 @@ const Survey = () => {
               fullWidth
               label='Дата начала срока действия права пребывания (проживания)'
               variant='outlined'
-              required
+              
             />
           </Box>
           <Box sx={{ mb: 3 }}>
@@ -284,7 +318,7 @@ const Survey = () => {
               fullWidth
               label='Дата окончания срока действия права пребывания (проживания)'
               variant='outlined'
-              required
+              
             />
           </Box>
 
@@ -297,13 +331,13 @@ const Survey = () => {
               fullWidth
               label='Цель и предполагаемый характер деловых отношений'
               variant='outlined'
-              required
+              
             />
           </Box>
           <Typography variant='h6' gutterBottom>
             Является ли лицо публичным должностным лицом (ПДЛ) (нужное подчеркнуть)
           </Typography>
-          <FormControl component='fieldset' sx={{ mb: 3 }} required>
+          <FormControl component='fieldset' sx={{ mb: 3 }} >
             <RadioGroup row>
               <FormControlLabel value='Yes' control={<Radio />} label='Да' />
               <FormControlLabel value='No' control={<Radio />} label='Нет' />
@@ -315,7 +349,7 @@ const Survey = () => {
             Сведения о наличии у лица бенефициарного владельца (нужное подчеркнуть)
           </Typography>
 
-          <FormControl component='fieldset' sx={{ mb: 3 }} required>
+          <FormControl component='fieldset' sx={{ mb: 3 }} >
             <RadioGroup row>
               <FormControlLabel value='Have' control={<Radio />} label='Имеется' />
               <FormControlLabel value='DoNotHave' control={<Radio />} label='Не имеется' />
@@ -327,7 +361,7 @@ const Survey = () => {
               fullWidth
               label='Сведения о документах, подтверждающих полномочия по распоряжению денежными средствами или имуществом (согласно карточке образцов подписей)'
               variant='outlined'
-              required
+              
             />
           </Box>
           <Box sx={{ mb: 3 }}>
@@ -336,7 +370,7 @@ const Survey = () => {
               name='bankName'
               label='Название банка ИП'
               variant='outlined'
-              required
+              
               value={surveyData.bankName}
               onChange={handleChange}
             />
@@ -347,7 +381,7 @@ const Survey = () => {
               name='bic'
               label='БИК'
               variant='outlined'
-              required
+              
               value={surveyData.bic}
               onChange={handleChange}
             />
@@ -358,7 +392,7 @@ const Survey = () => {
               name='bankAccount'
               label='Расчетный счет'
               variant='outlined'
-              required
+              
               value={surveyData.bankAccount}
               onChange={handleChange}
             />
@@ -378,7 +412,7 @@ const Survey = () => {
               label='Дата регистрации'
               type='date'
               InputLabelProps={{ shrink: true }}
-              required
+              
             />
           </Box>
           <Box sx={{ mb: 3 }}>
@@ -386,7 +420,7 @@ const Survey = () => {
               fullWidth
               label='Государственный регистрационный номер'
               variant='outlined'
-              required
+              
             />
           </Box>
           <Box sx={{ mb: 3 }}>
@@ -394,17 +428,17 @@ const Survey = () => {
               fullWidth
               label='Наименование регистрирующего органа'
               variant='outlined'
-              required
+              
             />
           </Box>
           <Box sx={{ mb: 3 }}>
-            <TextField fullWidth label='Место регистрации' variant='outlined' required />
+            <TextField fullWidth label='Место регистрации' variant='outlined'  />
           </Box>
           <Box sx={{ mb: 3 }}>
-            <TextField fullWidth label='Код УГНС' variant='outlined' required />
+            <TextField fullWidth label='Код УГНС' variant='outlined'  />
           </Box>
           <Box sx={{ mb: 3 }}>
-            <TextField fullWidth label='ОКПО' variant='outlined' required />
+            <TextField fullWidth label='ОКПО' variant='outlined'  />
           </Box>
 
           <Typography variant='h6' gutterBottom sx={{ mt: 4 }}>
@@ -412,10 +446,10 @@ const Survey = () => {
           </Typography>
 
           <Box sx={{ mb: 3 }}>
-            <TextField fullWidth label='Вид патента или лицензии' variant='outlined' required />
+            <TextField fullWidth label='Вид патента или лицензии' variant='outlined'  />
           </Box>
           <Box sx={{ mb: 3 }}>
-            <TextField fullWidth label='Номер патента или лицензии' variant='outlined' required />
+            <TextField fullWidth label='Номер патента или лицензии' variant='outlined'  />
           </Box>
           <Box sx={{ mb: 3 }}>
             <TextField
@@ -423,7 +457,7 @@ const Survey = () => {
               label='Дата выдачи патента или лицензии'
               type='date'
               InputLabelProps={{ shrink: true }}
-              required
+              
             />
           </Box>
           <Box sx={{ mb: 3 }}>
@@ -431,7 +465,7 @@ const Survey = () => {
               fullWidth
               label='Кем выдан патент или лицензия'
               variant='outlined'
-              required
+              
             />
           </Box>
           <Box sx={{ mb: 3 }}>
@@ -439,7 +473,7 @@ const Survey = () => {
               fullWidth
               label='Срок действия патента или лицензии'
               variant='outlined'
-              required
+              
             />
           </Box>
           <Box sx={{ mb: 3 }}>
@@ -450,10 +484,10 @@ const Survey = () => {
             />
           </Box>
           <Box sx={{ mb: 3 }}>
-            <TextField fullWidth label='Код УГНС' variant='outlined' required />
+            <TextField fullWidth label='Код УГНС' variant='outlined'  />
           </Box>
           <Box sx={{ mb: 3 }}>
-            <TextField fullWidth label='ОКПО' variant='outlined' required />
+            <TextField fullWidth label='ОКПО' variant='outlined'  />
           </Box>
 
           <Typography variant='h5' gutterBottom>
@@ -464,7 +498,7 @@ const Survey = () => {
           <Typography variant='h6' gutterBottom>
             Сведения о проведении верификации и о результатах верификации (нужное подчеркнуть)
           </Typography>
-          <FormControl component='fieldset' sx={{ mb: 3 }} required>
+          <FormControl component='fieldset' sx={{ mb: 3 }} >
             <RadioGroup row>
               <FormControlLabel value='CarriedOut' control={<Radio />} label='Проведена' />
               <FormControlLabel value='NotCarriedOut' control={<Radio />} label='Не проведена' />
@@ -492,7 +526,7 @@ const Survey = () => {
             экстремистской деятельности, а также за финансирование данной деятельности, и о
             результатах проверки (нужное подчеркнуть)
           </Typography>
-          <FormControl component='fieldset' sx={{ mb: 3 }} required>
+          <FormControl component='fieldset' sx={{ mb: 3 }} >
             <RadioGroup row>
               <FormControlLabel
                 value='NotInTheList'
@@ -515,7 +549,7 @@ const Survey = () => {
           <Typography variant='h6' gutterBottom>
             Степень (уровень) риска (нужное подчеркнуть)
           </Typography>
-          <FormControl component='fieldset' sx={{ mb: 3 }} required>
+          <FormControl component='fieldset' sx={{ mb: 3 }} >
             <RadioGroup row>
               <FormControlLabel value='HighRisk' control={<Radio />} label='Высокий риск' />
               <FormControlLabel value='LowRisk' control={<Radio />} label='Низкий риск' />
@@ -526,7 +560,7 @@ const Survey = () => {
               fullWidth
               label='Обоснование оценки степени (уровня) риска (по критериям высокого риска)'
               variant='outlined'
-              required
+              
             />
           </Box>
           <Box sx={{ mb: 3 }}>
@@ -556,9 +590,9 @@ const Survey = () => {
               type='date'
               InputLabelProps={{ shrink: true }}
               sx={{ mb: 1 }}
-              required
+              
             />
-            <TextField fullWidth label='ФИО:' variant='outlined' required />
+            <TextField fullWidth label='ФИО:' variant='outlined'  />
           </Box>
           <Box sx={{ mb: 3 }}>
             <Typography variant='h6' gutterBottom>
@@ -570,9 +604,9 @@ const Survey = () => {
               type='date'
               InputLabelProps={{ shrink: true }}
               sx={{ mb: 1 }}
-              required
+              
             />
-            <TextField fullWidth label='ФИО:' variant='outlined' required />
+            <TextField fullWidth label='ФИО:' variant='outlined'  />
           </Box>
 
           <Box>
@@ -583,7 +617,7 @@ const Survey = () => {
               placeholder='ФИО / представителя'
               variant='outlined'
               size='small'
-              required
+              
             />
 
             <Typography variant='body1' align='justify'>
@@ -598,6 +632,8 @@ const Survey = () => {
               доходов.
             </Typography>
           </Box>
+
+          <ReCAPTCHA style={{ margin: '10px 0' }} ref={recaptcha} sitekey='6Lco56QqAAAAAMz69pba6ztoEHlsPmJ6Vn_xJAFm' />
 
           <Button type='submit' variant='contained' size='large'>
             Далее
